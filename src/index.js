@@ -67,17 +67,25 @@ let calculateRowSpan = event => {
 }
 
 let createEvent = (parent, event) => {
-	let color = ['pink', 'green', 'blue', 'orange', 'yellow'][parseInt(Math.random() * 5)]
+	let color = ['pink', 'green', 'blue', 'orange', 'yellow', 'purple'][parseInt(Math.random() * 6)]
 	let name = `${event.name}<div class="time">from ${event.start} to ${event.end}</div>`
 	let column = createColIn(parent, 'event, '+ color, name)
 	column.rowSpan = calculateRowSpan(event)
 	return column
 }
 
+let countRooms = () => {
+	let number = 0
+	for (let i in buildings)
+		number += buildings[i].length
+	return number
+}
 // create lines
 for (var i = 0; i < times.length - 1; i ++) {
 	let line = createRowIn(table, 'line')
+	let time = createRowIn(table)
 	createColIn(line, 'spacer')
+	createColIn(time, 'time', times[i+1])
 	let start = times[i]
 	for (let n in buildings) {
 		let rooms = buildings[n]
@@ -86,13 +94,22 @@ for (var i = 0; i < times.length - 1; i ++) {
 			let event = eventsForThisRoom.filter(event => event.start == start)[0]
 			// if we have an event in this room at this time
 			if (event) createEvent(line, event)
-			// if we intersect with other events that has bigger rowSpan
+			// if we intersect with other events that have bigger rowSpan
 			else if (eventsForThisRoom.filter(event =>
 				event.start < start && start < event.end).length == 0)
 					createColIn(line)
 		})
+		rooms.forEach(room => {
+			let eventsForThisRoom = model.filter(event => event.room == room)
+			let event = eventsForThisRoom.filter(event => event.start == start)[0]
+			// if we have an event in this room at this time
+			// if (event) createEvent(line, event)
+			// if we intersect with other events that have bigger rowSpan
+			if (eventsForThisRoom.filter(event =>
+				event.start < start && start < event.end).length == 0)
+					createColIn(time,'time')
+		})
 		createColIn(line, 'spacer')
+		createColIn(time, 'spacer')
 	}
-	let time = createRowIn(table)
-	createColIn(time, 'time', times[i+1])
 }
